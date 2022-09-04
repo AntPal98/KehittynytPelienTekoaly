@@ -1,0 +1,16 @@
+1;Wait! there are evil robots, I can sense them!;1;
+2;Ok;5;
+3;Where?;9;
+4;Never mind the robots, right?;13;
+5;Wait here and I'll distract them so that you can get to the space ship;5;
+6;Ok;-1;
+7;Yes, sir Robot;-1;
+8;No problemo;-1;
+9;There. Wait here and I'll distract them so that you can get to the space ship.;9;
+10;Ok.;-1;
+11;Yes, sir Robot;-1;
+12;No problemo;-1;
+13;They're dangerous. Wait here and I'll distract them so that you can get to the space ship.;13;
+14;ok;-1;
+15;Yes, sir Robot.;-1;
+16;No problemo;-1;
