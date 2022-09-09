@@ -7,6 +7,17 @@
 #include "Toggleable.h"
 #include "SurveillanceCamera.generated.h"
 
+UENUM( BlueprintType)
+enum class CameraState : uint8 {
+	kSeeking,
+	kAnalyzing,
+	kAlarm,
+	kNumStates
+};
+
+const float DEFAULT_ANALYZE_TIME_IN_SECONDS = 5.0f;
+const float DEFAULT_ALARM_TIME_IN_SECONDS = 2.0f;
+
 UCLASS()
 class ESCAPEINSPACE_API ASurveillanceCamera : public AToggleable
 {
@@ -43,12 +54,23 @@ public:
   
   UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Camera Settings")
   float TimeToRaiseAlarmFromDetection;
+
+  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
+  float analyzeTimeSeconds;
+
+  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
+  float alarmTimeSeconds;
   
-  float passedTimeSinceDetection;
+  float passedTimeSinceStateChange;
+
+  CameraState state;
   
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	void SeekOperation(float DeltaTime);
+	void LookAtPlayer();
 
 public:	
 	// Called every frame

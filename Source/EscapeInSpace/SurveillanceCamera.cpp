@@ -16,8 +16,10 @@ ASurveillanceCamera::ASurveillanceCamera()
   detectedPlayer = nullptr;
   isActive = true;
   followMode = false;
-  TimeToRaiseAlarmFromDetection = 0.0f;
-  passedTimeSinceDetection = 0.0f;
+  passedTimeSinceStateChange = 0.0f;
+  state = CameraState::kSeeking;
+  alarmTimeSeconds = DEFAULT_ALARM_TIME_IN_SECONDS;
+  analyzeTimeSeconds = DEFAULT_ANALYZE_TIME_IN_SECONDS;
 }
 
 // Called when the game starts or when spawned
@@ -44,52 +46,95 @@ void ASurveillanceCamera::BeginPlay()
 	
 }
 
+void ASurveillanceCamera::SeekOperation(float DeltaTime)
+{
+	if (lerpAlpha > 1.0f && holdRemaining <= 0.0f)
+	{
+		reverseDirection = true;
+		holdRemaining = holdTime;
+	}
+	else if (lerpAlpha < 0.0f && holdRemaining <= 0.0f)
+	{
+		reverseDirection = false;
+		holdRemaining = holdTime;
+	}
+	if (holdRemaining > 0.0f)
+	{
+		holdRemaining -= DeltaTime;
+		lerpAlpha = FMath::Clamp(lerpAlpha, 0.0f, 1.0f);
+	}
+	else
+	{
+		lerpAlpha = FMath::Clamp(lerpAlpha, 0.0f, 1.0f);
+		if (reverseDirection) lerpAlpha -= rotationSpeed * DeltaTime;
+		else                    lerpAlpha += rotationSpeed * DeltaTime;
+		FRotator newRot = FMath::Lerp(startPosition, endPosition, lerpAlpha);
+
+		SetActorRotation(newRot);
+	}
+}
+
+void ASurveillanceCamera::LookAtPlayer()
+{
+	// set rotation to match player.
+	// Camera model must point along X axis
+	FVector cameraToPlayer = detectedPlayer->GetActorLocation() - GetActorLocation();
+	SetActorRotation(cameraToPlayer.Rotation());
+}
+
 // Called every frame
 void ASurveillanceCamera::Tick(float DeltaTime)
 {
   Super::Tick(DeltaTime);
   
   if ( isActive == false ) return;
-  
-  if ( IsPlayerDetected() )
+
+  switch (state)
   {
-	  // set rotation to match player.
-	  // Camera model must point along X axis
-	  FVector cameraToPlayer = detectedPlayer->GetActorLocation() - GetActorLocation();
-	  SetActorRotation(cameraToPlayer.Rotation());
-	  passedTimeSinceDetection += DeltaTime;
-	  if ( passedTimeSinceDetection >= TimeToRaiseAlarmFromDetection)
+  case CameraState::kSeeking:
+	  if (IsPlayerDetected())
 	  {
-			OnRaiseAlarm();
+		  state = CameraState::kAnalyzing;
+		  passedTimeSinceStateChange = 0.0f;
 	  }
-	  return;
+	  else
+	  {
+		  SeekOperation(DeltaTime);
+	  }
+	  break;
+  case CameraState::kAnalyzing:
+	  if (IsPlayerDetected())
+	  {
+		  LookAtPlayer();
+		  passedTimeSinceStateChange += DeltaTime;
+
+		  if (passedTimeSinceStateChange >= analyzeTimeSeconds)
+		  {
+			  state = CameraState::kAlarm;
+			  passedTimeSinceStateChange = 0.0f;
+		  }
+	  }
+	  else
+	  {
+		  state = CameraState::kSeeking;
+		  passedTimeSinceStateChange = 0.0f;
+	  }
+	  break;
+  case CameraState::kAlarm:
+	  passedTimeSinceStateChange += DeltaTime;
+
+	  if (passedTimeSinceStateChange >= alarmTimeSeconds)
+	  {
+		  OnRaiseAlarm();
+		  state = CameraState::kSeeking;
+		  passedTimeSinceStateChange = 0.0f;
+	  }
+	  break;
+  case CameraState::kNumStates:
+	  break;
+  default:
+	  break;
   }
-  
-  if ( lerpAlpha > 1.0f && holdRemaining <= 0.0f )
-  {
-      reverseDirection = true;
-      holdRemaining = holdTime;
-  } 
-  else if ( lerpAlpha < 0.0f && holdRemaining <= 0.0f )
-  {
-      reverseDirection = false;
-      holdRemaining = holdTime;
-  }
-  if ( holdRemaining > 0.0f)
-  {
-        holdRemaining -= DeltaTime;
-        lerpAlpha = FMath::Clamp(lerpAlpha, 0.0f, 1.0f);
-  }
-  else 
-  { 
-      lerpAlpha = FMath::Clamp(lerpAlpha, 0.0f, 1.0f);
-      if ( reverseDirection ) lerpAlpha -= rotationSpeed*DeltaTime;
-      else                    lerpAlpha += rotationSpeed*DeltaTime;
-      FRotator newRot = FMath::Lerp(startPosition, endPosition, lerpAlpha);
-	  
-	  SetActorRotation(newRot);
-  }
-		
 }
 
 // Called to bind functionality to input
@@ -128,11 +173,11 @@ void ASurveillanceCamera::OnRaiseAlarm_Implementation()
 void ASurveillanceCamera::SetDetectedPlayer(AActor *player)
 {
   
-  detectedPlayer = player;
-  followMode = (detectedPlayer != nullptr);
-  UE_LOG(LogTemp, Log, TEXT("Setting detected player to %sw"), *AActor::GetDebugName(player));
-  if ( detectedPlayer == nullptr )
-	passedTimeSinceDetection = 0.0;
+	detectedPlayer = player;
+	followMode = (detectedPlayer != nullptr);
+	UE_LOG(LogTemp, Log, TEXT("Setting detected player to %sw"), *AActor::GetDebugName(player));
+	//if ( detectedPlayer == nullptr )
+	//passedTimeSinceStateChange = 0.0;
   
 }
 bool ASurveillanceCamera::IsPlayerDetected()
