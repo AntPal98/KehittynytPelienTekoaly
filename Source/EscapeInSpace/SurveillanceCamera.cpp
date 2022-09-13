@@ -94,8 +94,7 @@ void ASurveillanceCamera::Tick(float DeltaTime)
   case CameraState::kSeeking:
 	  if (IsPlayerDetected())
 	  {
-		  state = CameraState::kAnalyzing;
-		  passedTimeSinceStateChange = 0.0f;
+		  SetCameraState(CameraState::kAnalyzing);
 	  }
 	  else
 	  {
@@ -110,14 +109,12 @@ void ASurveillanceCamera::Tick(float DeltaTime)
 
 		  if (passedTimeSinceStateChange >= analyzeTimeSeconds)
 		  {
-			  state = CameraState::kAlarm;
-			  passedTimeSinceStateChange = 0.0f;
+			  SetCameraState(CameraState::kAlarm);
 		  }
 	  }
 	  else
 	  {
-		  state = CameraState::kSeeking;
-		  passedTimeSinceStateChange = 0.0f;
+		  SetCameraState(CameraState::kSeeking);
 	  }
 	  break;
   case CameraState::kAlarm:
@@ -126,8 +123,7 @@ void ASurveillanceCamera::Tick(float DeltaTime)
 	  if (passedTimeSinceStateChange >= alarmTimeSeconds)
 	  {
 		  OnRaiseAlarm();
-		  state = CameraState::kSeeking;
-		  passedTimeSinceStateChange = 0.0f;
+		  SetCameraState(CameraState::kSeeking);
 	  }
 	  break;
   case CameraState::kNumStates:
@@ -168,6 +164,17 @@ void ASurveillanceCamera::Enable()
 
 void ASurveillanceCamera::OnRaiseAlarm_Implementation()
 {
+}
+
+void ASurveillanceCamera::OnStateChanged_Implementation(CameraState newState)
+{
+}
+
+void ASurveillanceCamera::SetCameraState(CameraState newState)
+{
+	state = newState;
+	passedTimeSinceStateChange = 0.0f;
+	OnStateChanged(state);
 }
 
 void ASurveillanceCamera::SetDetectedPlayer(AActor *player)

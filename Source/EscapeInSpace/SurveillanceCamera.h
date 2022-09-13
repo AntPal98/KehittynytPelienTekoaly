@@ -9,10 +9,10 @@
 
 UENUM( BlueprintType)
 enum class CameraState : uint8 {
-	kSeeking,
-	kAnalyzing,
-	kAlarm,
-	kNumStates
+	kSeeking UMETA(DisplayName="Camera is seeking player"),
+	kAnalyzing UMETA(DisplayName = "Camera has detected a player and is still analyzing"),
+	kAlarm UMETA(DisplayName = "Camera has detected illegal action and will raise alarm soon"),
+	kNumStates  UMETA(DisplayName = "Total number of camera states")
 };
 
 const float DEFAULT_ANALYZE_TIME_IN_SECONDS = 5.0f;
@@ -90,6 +90,12 @@ public:
 	
   UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Surveillance Camera")
   void OnRaiseAlarm();
+
+  UFUNCTION(BlueprintCallable, Category = "Surveillance Camera")
+  void SetCameraState(CameraState newState);
+
+  UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Surveillance Camera")
+  void OnStateChanged(CameraState newState);
   
   UFUNCTION(BlueprintCallable, Category="Surveillance Camera")
   void SetDetectedPlayer(AActor *player);
