@@ -18,20 +18,20 @@ void ATerminal::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//if (ScreenTextureResolution.X < 100 || ScreenTextureResolution.Y < 100) 
-	//{
-	//	UE_LOG(LogTemp, Error, TEXT("screen texture resolution is not set in terminal"));
-	//	return;
-	//}
+	if (ScreenTextureResolution.X < 100 || ScreenTextureResolution.Y < 100) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("screen texture resolution is not set in terminal"));
+		return;
+	}
 
-	//ScreenTexture = UCanvasRenderTarget2D::CreateCanvasRenderTarget2D(GetWorld(), UCanvasRenderTarget2D::StaticClass(), ScreenTextureResolution.X, ScreenTextureResolution.Y);
+	ScreenTexture = UCanvasRenderTarget2D::CreateCanvasRenderTarget2D(GetWorld(), UCanvasRenderTarget2D::StaticClass(), ScreenTextureResolution.X, ScreenTextureResolution.Y);
 	
 	ScreenTexture->OnCanvasRenderTargetUpdate.AddDynamic(this, &ATerminal::RenderScreen);
 	ScreenTexture->ClearColor = ClearColor;
 
-	UMaterialInstanceDynamic* materialInstance = UMaterialInstanceDynamic::Create(Mesh->GetMaterial(0), this);
-	Mesh->SetMaterial(0, materialInstance);
-	materialInstance->SetTextureParameterValue(ScreenTextureParamName, ScreenTexture);
+	MaterialInstance = UMaterialInstanceDynamic::Create(Mesh->GetMaterial(0), this);
+	Mesh->SetMaterial(0, MaterialInstance);
+	MaterialInstance->SetTextureParameterValue(ScreenTextureParamName, ScreenTexture);
 }
 
 // Called every frame

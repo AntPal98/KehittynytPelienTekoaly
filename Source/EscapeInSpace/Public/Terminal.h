@@ -21,7 +21,6 @@ public:
 	// Sets default values for this actor's properties
 	ATerminal();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Terminal");
 	UCanvasRenderTarget2D* ScreenTexture;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Terminal");
@@ -56,6 +55,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Terminal");
 	float FontScale = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Terminal");
+	UMaterialInstanceDynamic* MaterialInstance;
 
 
 protected:
