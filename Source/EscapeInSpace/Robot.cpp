@@ -22,6 +22,7 @@ ARobot::ARobot()
   
   StaticMesh->AttachToComponent(GetCapsuleComponent(), FAttachmentTransformRules::KeepRelativeTransform);  
   StaticMesh->SetRelativeLocation(FVector::ZeroVector);
+  RobotMaterialInstance = nullptr;
 }
 
 // Called when the game starts or when spawned
@@ -54,4 +55,17 @@ void ARobot::SetMaterialToSeppo()
   else
     UE_LOG(LogTemp, Warning, TEXT("Cannot set SeppoMaterial!"));
     
+}
+
+
+void ARobot::SetRoughness(float value)
+{
+    if (!RobotMaterialInstance)
+    {
+        RobotMaterialInstance = UMaterialInstanceDynamic::Create(StaticMesh->GetMaterial(0), this);
+        StaticMesh->SetMaterial(0, RobotMaterialInstance);
+    }
+
+    RobotMaterialInstance->SetScalarParameterValue("Roughness", value);
+
 }

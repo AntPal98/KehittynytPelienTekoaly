@@ -24,6 +24,8 @@ public:
   
   UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Robot setings")
   UMaterialInterface *SeppoMaterial;
+
+  UMaterialInstanceDynamic* RobotMaterialInstance;
     
   
 protected:
@@ -39,6 +41,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
   void SetMaterialToSeppo();
+
+	UFUNCTION(BlueprintCallable)
+	void SetRoughness(float value);
 
   
 
